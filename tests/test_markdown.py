@@ -2,6 +2,9 @@
 
 from datetime import date
 
+from hypothesis import given, settings
+from hypothesis import strategies as st
+
 from vocabulary_vault.markdown import generate_chapter_markdown, parse_chapter_markdown
 from vocabulary_vault.models import Chapter, WordEntry
 
@@ -216,3 +219,112 @@ class TestRoundTrip:
         metadata, parsed = parse_chapter_markdown(md)
         assert metadata["word_count"] == 0
         assert parsed == []
+
+
+# Feature: vocabulary-vault, Property 1: Markdown Round-Trip
+# **Validates: Requirements 3.6, 3.5**
+
+# Strategy: letters only, no Markdown-breaking chars for word headings
+_letters = st.characters(whitelist_categories=("L",))
+
+_word_strategy = st.text(alphabet=_letters, min_size=1, max_size=40)
+
+_safe_text = st.text(
+    alphabet=st.characters(
+        whitelist_categories=("L", "N", "Z"),
+        blacklist_characters='#-*"`\\',
+    ),
+    min_size=1,
+    max_size=100,
+).map(lambda s: s.strip()).filter(lambda s: len(s) > 0)
+
+_synonyms_strategy = st.one_of(
+    st.just(""),
+    st.lists(
+        st.text(alphabet=_letters, min_size=1, max_size=20),
+        min_size=1,
+        max_size=5,
+    ).map(", ".join),
+)
+
+_context_strategy = st.text(
+    alphabet=st.characters(
+        whitelist_categories=("L", "N", "Z"),
+        blacklist_characters='"\\#-*',
+    ),
+    min_size=1,
+    max_size=200,
+).map(lambda s: s.strip()).filter(lambda s: len(s) > 0)
+
+_word_entry_strategy = st.builds(
+    WordEntry,
+    word=_word_strategy,
+    meaning=_safe_text,
+    synonyms=_synonyms_strategy,
+    context=_context_strategy,
+    date_added=st.dates(min_value=date(1900, 1, 1), max_value=date(2100, 12, 31)),
+)
+
+
+class TestMarkdownRoundTripProperty:
+    """Property-based test: generate → parse round-trip preserves WordEntry fields."""
+
+    @given(entry=_word_entry_strategy)
+    @settings(max_examples=100)
+    def test_round_trip_property(self, entry: WordEntry):
+        """For any valid WordEntry, generate then parse should produce an equivalent entry."""
+        chapter = Chapter(name="Test Chapter", chapter_number=1)
+        chapter.book_name = "Test Book"  # type: ignore[attr-defined]
+
+        md = generate_chapter_markdown(chapter, [entry])
+        _metadata, parsed = parse_chapter_markdown(md)
+
+        assert len(parsed) == 1
+        p = parsed[0]
+        assert p.word == entry.word
+        assert p.meaning == entry.meaning
+        assert p.synonyms == entry.synonyms
+        assert p.context == entry.context
+        assert p.date_added == entry.date_added
+
+
+# Feature: vocabulary-vault, Property 5: Markdown Generation Completeness
+# **Validates: Requirements 3.1, 3.2**
+
+
+class TestMarkdownGenerationCompletenessProperty:
+    """Property-based test: generated Markdown contains complete YAML front matter and all word entry sections."""
+
+    @given(
+        book_name=_safe_text,
+        chapter_name=_safe_text,
+        chapter_number=st.integers(min_value=0, max_value=9999),
+        entries=st.lists(_word_entry_strategy, min_size=1, max_size=10),
+    )
+    @settings(max_examples=100)
+    def test_markdown_generation_completeness(
+        self,
+        book_name: str,
+        chapter_name: str,
+        chapter_number: int,
+        entries: list,
+    ):
+        """For any chapter with 1+ entries, generated Markdown has complete front matter and word sections."""
+        chapter = Chapter(name=chapter_name, chapter_number=chapter_number)
+        chapter.book_name = book_name  # type: ignore[attr-defined]
+
+        md = generate_chapter_markdown(chapter, entries)
+
+        # Assert YAML front matter contains required fields
+        assert f'book: "{book_name}"' in md or f"book:" in md
+        assert f'chapter: "{chapter_name}"' in md or f"chapter:" in md
+        assert f"chapter_number: {chapter_number}" in md
+        assert f"word_count: {len(entries)}" in md
+
+        # Assert each word entry section is present with all required fields
+        for entry in entries:
+            assert f"## {entry.word}" in md
+            assert "**Meaning:**" in md
+            assert "**Synonyms:**" in md
+            assert "**Context:**" in md
+            assert "**Date Added:**" in md
