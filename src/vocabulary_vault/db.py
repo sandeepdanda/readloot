@@ -60,6 +60,11 @@ CREATE VIRTUAL TABLE IF NOT EXISTS word_entries_fts USING fts5(
     content_rowid='id'
 );
 
+CREATE TABLE IF NOT EXISTS achievements (
+    key TEXT PRIMARY KEY,
+    earned_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
 INSERT OR IGNORE INTO user_stats (id) VALUES (1);
 """
 
