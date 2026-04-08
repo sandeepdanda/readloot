@@ -23,7 +23,7 @@ Three layers, each independently usable:
 └─────────────────────────────────────────────┘
 ```
 
-The backend does NOT reimplement business logic. It imports the CLI package (`vocabulary_vault`) and calls its service functions directly. This means any fix to the service layer benefits both CLI and web.
+The backend does NOT reimplement business logic. It imports the CLI package (`vocabulary_vault`) and calls its service functions directly. Any fix to the service layer benefits both CLI and web.
 
 ## Tech Stack
 
@@ -31,9 +31,10 @@ The backend does NOT reimplement business logic. It imports the CLI package (`vo
 |-------|-----------|
 | CLI | Python 3.10+, Click, Rich, SQLite, Markdown files |
 | Backend | FastAPI, python-jose (JWT), passlib/bcrypt, pydantic-settings |
-| Frontend | Next.js 14 (App Router), TypeScript, Tailwind CSS, shadcn/ui, TanStack Query, Framer Motion, next-pwa |
+| Frontend | Next.js 14.2.29 (App Router), TypeScript, Tailwind CSS, shadcn/ui, TanStack Query, Framer Motion, next-pwa |
 | Database | SQLite per user (WAL mode, FTS5 full-text search) |
-| Deployment | Render (render.yaml), Docker (Dockerfile) |
+| CI | GitHub Actions (backend tests + frontend build on push) |
+| Deployment | Render (render.yaml), Docker multi-stage (Dockerfile) |
 
 ## Directory Structure
 
@@ -60,11 +61,12 @@ vocabulary-vault/
 │   └── test_markdown.py
 ├── backend/                    # FastAPI web backend
 │   ├── app/
-│   │   ├── main.py             # App entry, CORS, router registration, error handler
-│   │   ├── auth.py             # Register/login/logout, JWT (httpOnly cookies), get_current_user dependency
-│   │   ├── db.py               # Per-user SQLite resolver: user_id -> vaults/{user_id}/vault.db
-│   │   ├── config.py           # Settings from env: SECRET_KEY, DATA_DIR, ALLOWED_ORIGINS
-│   │   ├── schemas.py          # Pydantic request/response models
+│   │   ├── main.py             # App entry, CORS, router registration, generic error handler
+│   │   ├── auth.py             # Register/login/logout, JWT (httpOnly cookies), get_current_user
+│   │   ├── db.py               # Per-user SQLite resolver + get_db FastAPI dependency (auto-close)
+│   │   ├── config.py           # Settings via pydantic-settings ConfigDict
+│   │   ├── schemas.py          # Pydantic models with Field validation (min/max length)
+│   │   ├── utils.py            # Shared helpers: word_entry_to_response, achievement_keys_to_responses
 │   │   └── routes/
 │   │       ├── words.py        # POST /api/words, GET /lookup, /search, /export
 │   │       ├── books.py        # GET /api/books, /api/books/{name}
@@ -76,7 +78,7 @@ vocabulary-vault/
 │   ├── tests/                  # Backend API tests (28 tests)
 │   │   ├── conftest.py         # Isolated temp data dir, TestClient, auth fixtures
 │   │   ├── test_auth.py        # Auth flow: register, login, logout, JWT, hashing
-│   │   └── test_api.py         # All routes: words, review, books, stats, achievements, wotd, 401 guards
+│   │   └── test_api.py         # All routes + 401 guards on all protected endpoints
 │   └── requirements.txt
 ├── frontend/                   # Next.js 14 web frontend
 │   ├── app/                    # App Router pages
@@ -109,16 +111,18 @@ vocabulary-vault/
 │   │   ├── manifest.json        # PWA manifest
 │   │   └── icons/               # 192x192 and 512x512 PNG icons
 │   └── next.config.js           # next-pwa config
-├── examples/sapiens/            # Example book chapters (Markdown)
+├── research/                    # Feature research docs (see ROADMAP.md)
+├── .github/workflows/ci.yml    # GitHub Actions: backend tests + frontend build
 ├── pyproject.toml               # CLI package config (pip install -e .)
-├── Dockerfile                   # Production container
+├── Dockerfile                   # Multi-stage production container (Python 3.12 + Node 20)
 ├── render.yaml                  # Render.com deployment config
+├── LICENSE                      # MIT
 └── start.sh                     # Backend start script
 ```
 
 ## Database Schema
 
-Single SQLite file per user at `data/vaults/{user_id}/vault.db`. Schema from `src/vocabulary_vault/db.py`:
+Single SQLite file per user at `data/vaults/{user_id}/vault.db`:
 
 | Table | Purpose | Key columns |
 |-------|---------|-------------|
@@ -178,6 +182,15 @@ All routes except auth require a valid JWT in the `access_token` httpOnly cookie
 - Correct answer: mastery +1, schedule next review
 - Wrong answer: reset mastery to 1, review tomorrow
 
+## Security
+
+- JWT auth via httpOnly cookies (not localStorage)
+- Passwords hashed with bcrypt
+- Password minimum 8 characters, username minimum 3 characters
+- Input length limits on all word fields (word: 100, meaning: 1000, context: 2000)
+- Generic error responses in production (no stack trace leaks)
+- Per-user database isolation (separate SQLite files)
+
 ## Setup and Running
 
 ```bash
@@ -198,21 +211,10 @@ cd backend && uvicorn app.main:app --reload    # http://localhost:8000
 # 4. Frontend
 cd frontend && npm install && npm run dev       # http://localhost:3000
 
-# 5. Run tests
-cd vocabulary-vault
+# 5. Run tests (run separately - shared conftest causes collision)
 python -m pytest tests/ -v                      # CLI tests (47)
 cd backend && python -m pytest tests/ -v        # Backend tests (28)
 ```
-
-## Deployment
-
-Configured for Render.com via `render.yaml`:
-- Builds both backend and frontend
-- Frontend static export copied to backend for serving
-- Persistent disk at `/opt/render/project/data` for SQLite files
-- SECRET_KEY auto-generated, ALLOWED_ORIGINS set to production URL
-
-Also has a `Dockerfile` for container deployment.
 
 ## Test Coverage
 
@@ -224,23 +226,10 @@ Also has a `Dockerfile` for container deployment.
 
 ## Known Issues
 
-- `themeColor` in page metadata triggers Next.js 14 deprecation warnings (should use `viewport` export instead of `metadata` export). Non-blocking.
-- Backend `app/config.py` uses class-based pydantic Settings config (deprecated in Pydantic V2, should use `ConfigDict`). Non-blocking.
+- `themeColor` in page metadata triggers Next.js 14 deprecation warnings (should use `viewport` export). Non-blocking.
 - Running `pytest` from the project root with both `tests/` and `backend/tests/` causes a conftest import collision. Run them separately.
+- 9 high-severity npm vulnerabilities remain in Next.js 14 transitive deps (unfixable without upgrading to Next.js 15).
 
-## Future Feature Ideas
+## Roadmap
 
-These are natural extensions of the existing architecture:
-
-- **Import from Kindle highlights** - Parse Kindle clippings file, auto-create books/chapters/words
-- **Multiplayer / leaderboard** - Compare XP and streaks with friends
-- **Spaced repetition tuning** - Let users adjust review intervals, add "hard/easy" buttons
-- **Word relationships** - Link related words across books, build a personal knowledge graph
-- **Reading progress** - Track pages/chapters read per book, not just words collected
-- **Review modes** - Multiple choice, fill-in-the-blank with context, flashcard flip
-- **Notifications** - Daily review reminders via PWA push notifications
-- **Offline mode** - Service worker caching for offline review sessions
-- **Statistics deep dive** - Review accuracy over time, mastery distribution charts, words per day graphs
-- **Social sharing** - Share achievement unlocks, word of the day
-- **AI-powered definitions** - Auto-fill meaning/synonyms/context when adding a word
-- **Markdown export** - Export vault as a formatted Markdown study guide
+See [ROADMAP.md](ROADMAP.md) for the prioritized feature plan and [research/](research/) for detailed technical research on each feature.
