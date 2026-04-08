@@ -1,190 +1,115 @@
 # Vocabulary Vault 📚⚔️
 
-A Python CLI tool that turns reading into a vocabulary RPG. Every word you save earns XP. Every review session strengthens your memory. Your vault grows book by book, chapter by chapter — and you level up along the way.
+A vocabulary RPG that turns reading into a game. Collect words from books you read, review them with spaced repetition, earn XP, level up, and unlock achievements.
 
-Words are stored in two places: **Markdown files** (browsable on GitHub, diffable, human-readable) and a **SQLite database** (searchable, stats-ready, powers spaced repetition). They stay in sync.
+Available as a **web app** (Next.js + FastAPI) and a **CLI tool** (Python).
 
 ## Features
 
-- **Dual storage** — SQLite for power, Markdown for readability. Both always in sync.
-- **Spaced repetition** — SM-2 inspired review system with mastery levels 0–5 and increasing intervals.
-- **Gamification** — Earn XP, maintain streaks, and climb from Novice to Vocabulary Vault Master.
-- **Word of the Day** — A daily word from your vault, weighted toward words you know least.
-- **Full-text search** — Search across words, meanings, synonyms, and context sentences.
-- **Organize by book & chapter** — Trace every word back to where you found it.
-- **Markdown sync** — Edit Markdown files by hand, then sync back to the database.
-- **JSON export** — Export your entire vault for backup or analysis.
+- **Spaced repetition** - SM-2 inspired review system with mastery levels 0-5 and increasing intervals
+- **Gamification** - Earn XP, maintain streaks, climb from Novice to Vocabulary Vault Master
+- **10 achievements** - First Steps, Bookworm Begins, Week Warrior, Flawless Victory, and more
+- **Word of the Day** - Daily word from your vault, weighted toward words you know least
+- **Full-text search** - Search across words, meanings, synonyms, and context sentences
+- **Organize by book and chapter** - Trace every word back to where you found it
+- **Dual storage** - SQLite for power, Markdown for readability, both always in sync
+- **JSON export** - Export your entire vault for backup or analysis
+- **Dark/light theme** - System-aware with manual toggle
+- **PWA** - Install on your phone as a native-feeling app
 
-## Installation
+## Web App
+
+### Setup
 
 ```bash
-git clone https://github.com/your-username/vocabulary-vault.git
+git clone https://github.com/sandeepdanda/vocabulary-vault.git
 cd vocabulary-vault
+
+# Backend
+pip install -e .
+pip install -r backend/requirements.txt
+cd backend && uvicorn app.main:app --reload    # http://localhost:8000
+
+# Frontend (new terminal)
+cd frontend && npm install && npm run dev       # http://localhost:3000
+```
+
+### Pages
+
+| Page | What it does |
+|------|-------------|
+| Dashboard | XP stats, streak, Word of the Day, due review count |
+| Add Word | Add words with book/chapter, auto-creates books |
+| Review | Type-the-word review sessions with score tracking |
+| Search | Full-text search across your vault |
+| Books | Browse books and chapters with word counts |
+| Stats | XP progress ring, level, streak history |
+| Achievements | Grid of 10 achievements (earned/locked) |
+| Settings | Theme toggle, export vault as JSON, logout |
+
+## CLI
+
+```bash
 pip install -e ".[dev]"
 ```
 
-This installs the `vault` CLI command and dev dependencies (pytest, hypothesis).
-
-## Quick Start
-
-### Add a word
-
 ```bash
-# Inline — fast, no prompts
 vault add "ephemeral" --book "Sapiens" --chapter "The Cognitive Revolution" \
   --meaning "lasting for a very short time" \
-  --synonyms "transient, fleeting, momentary" \
+  --synonyms "transient, fleeting" \
   --context "The ephemeral nature of early settlements left few traces."
 
-# Interactive — just run add and follow the prompts
-vault add
-```
-
-If you skip `--meaning` or `--synonyms`, the CLI suggests definitions from a built-in dictionary.
-
-### Look up a word
-
-```bash
-vault lookup ephemeral
-```
-
-Shows the meaning, synonyms, and every occurrence across all books with context.
-
-### Review words
-
-```bash
-# Review all due words
-vault review
-
-# Scope to a specific book
-vault review --book "Sapiens"
-
-# Scope to a specific chapter
-vault review --book "Sapiens" --chapter "The Cognitive Revolution"
-```
-
-The review shows context sentences with the word blanked out. Type the word to answer. Correct answers increase mastery; incorrect answers reset it.
-
-### Check your stats
-
-```bash
-vault stats
-```
-
-Displays your Reader Level, XP, streak, word count, and a progress bar to the next level.
-
-### Browse your books
-
-```bash
-# List all books
-vault books
-
-# Show chapters and word counts for a book
-vault books "Sapiens"
-```
-
-### Sync Markdown and SQLite
-
-```bash
-vault sync
-```
-
-Reconciles differences between your Markdown files and the database. Edit a `.md` file by hand, run sync, and the database picks up the changes (and vice versa).
-
-### Export to JSON
-
-```bash
-vault export
-vault export --output my_words.json
-```
-
-### Word of the Day
-
-```bash
-vault wotd
-```
-
-Same word all day (date-seeded), weighted toward words you haven't mastered yet. Also appears as a banner when you run any command.
-
-## Project Structure
-
-```
-vocabulary-vault/
-├── src/vocabulary_vault/
-│   ├── cli.py              # Click commands (vault add, lookup, review, ...)
-│   ├── db.py               # SQLite connection, schema, FTS5
-│   ├── models.py           # Dataclasses: WordEntry, Book, Chapter, UserStats
-│   ├── markdown.py         # Markdown generation and parsing
-│   ├── word_service.py     # Add, lookup, search, export words
-│   ├── book_service.py     # Book/chapter CRUD and filesystem management
-│   ├── review_engine.py    # Spaced repetition logic and review sessions
-│   ├── gamification.py     # XP, levels, streaks
-│   ├── sync_engine.py      # Markdown ↔ SQLite reconciliation
-│   ├── wotd.py             # Word of the Day selection
-│   ├── dictionary.py       # Local dictionary lookup
-│   └── data/
-│       └── dictionary.json # Bundled dictionary for suggestions
-├── tests/                  # Unit + property-based tests (Hypothesis)
-├── vault/                  # Default Markdown store (your word files live here)
-├── examples/               # Sample content to see the format
-│   └── sapiens/
-│       ├── 01_the_cognitive_revolution.md
-│       └── 02_the_agricultural_revolution.md
-└── pyproject.toml
+vault review                    # Review all due words
+vault review --book "Sapiens"   # Scope to a book
+vault stats                     # XP, level, streak
+vault books                     # List books
+vault sync                      # Markdown <-> SQLite sync
+vault export                    # JSON export
+vault wotd                      # Word of the Day
 ```
 
 ## How It Works
 
-### Dual Storage Philosophy
+All writes go through **SQLite first** (primary store with FTS5 search and gamification state). After every write, the corresponding **Markdown file is regenerated**. The `vault sync` command handles the reverse - edit a Markdown file by hand, sync imports it into SQLite.
 
-All writes go through **SQLite first** — it's the primary store with foreign keys, FTS5 search, and gamification state. After every write, the corresponding **Markdown file is regenerated** from the database.
-
-The Markdown files are the human-friendly layer: organized by `vault/{book}/{chapter}.md`, with YAML front matter and clean formatting. They're meant to be browsed on GitHub and tracked in version control.
-
-The `vault sync` command handles the reverse direction — if you edit a Markdown file by hand (or add one manually), sync imports it into SQLite.
-
-### Chapter File Format
-
-```markdown
----
-book: "Sapiens"
-chapter: "The Cognitive Revolution"
-chapter_number: 1
-word_count: 5
----
-
-## ephemeral
-
-- **Meaning:** lasting for a very short time
-- **Synonyms:** transient, fleeting, momentary
-- **Context:** "The ephemeral nature of early settlements left few traces."
-- **Date Added:** 2025-01-15
-```
+The web backend doesn't reimplement business logic. It imports the CLI package directly and calls its service functions, so fixes to the service layer benefit both CLI and web.
 
 ### Gamification
 
-| XP Threshold | Reader Level            |
-| ------------ | ----------------------- |
-| 0            | Novice                  |
-| 100          | Page Turner             |
-| 500          | Bookworm                |
-| 1,500        | Word Smith              |
-| 5,000        | Lexicon Lord            |
-| 15,000       | Vocabulary Vault Master |
+| XP Threshold | Reader Level |
+|-------------|-------------|
+| 0 | Novice |
+| 100 | Page Turner |
+| 500 | Bookworm |
+| 1,500 | Word Smith |
+| 5,000 | Lexicon Lord |
+| 15,000 | Vocabulary Vault Master |
 
-- **+10 XP** for every word added
-- **+5 XP** per correct review answer
-- Streaks track consecutive days of activity
++10 XP per word added, +5 XP per correct review answer. Streaks track consecutive days of activity.
 
-## Contributing
+### Review System
 
-1. Fork the repo
-2. Create a feature branch (`git checkout -b feature/my-feature`)
-3. Install dev dependencies: `pip install -e ".[dev]"`
-4. Run tests: `pytest`
-5. Open a pull request
+Mastery levels 0-5 with increasing review intervals (1, 1, 3, 7, 14, 30 days). Correct answers increase mastery. Wrong answers reset to level 1 with a review tomorrow.
 
-Tests use [Hypothesis](https://hypothesis.readthedocs.io/) for property-based testing alongside standard pytest unit tests.
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Frontend | Next.js 14, TypeScript, Tailwind CSS, shadcn/ui, TanStack Query, Framer Motion |
+| Backend | FastAPI, JWT auth (httpOnly cookies), per-user SQLite vaults |
+| CLI | Python, Click, Rich |
+| Database | SQLite (WAL mode, FTS5), Markdown files |
+
+## Tests
+
+```bash
+python -m pytest tests/ -v              # CLI tests (47)
+cd backend && python -m pytest tests/ -v # Backend tests (28)
+```
+
+## Deployment
+
+Configured for Render.com (`render.yaml`) and Docker (`Dockerfile`). See [PROJECT.md](PROJECT.md) for full architecture details.
 
 ## License
 
