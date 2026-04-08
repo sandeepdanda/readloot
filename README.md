@@ -52,40 +52,16 @@ Words come back at increasing intervals (1, 1, 3, 7, 14, 30 days) as you master 
 ## Architecture
 
 ```mermaid
-graph TB
-    subgraph Frontend["Frontend · Next.js 14 + TypeScript"]
-        UI["10 Pages · Tailwind · shadcn/ui"]
-        Gamify["Gamification UI · Framer Motion"]
-        PWA["PWA · Offline Support"]
-    end
+graph LR
+    A["🖥️ Next.js 14\nTypeScript · Tailwind"] -->|REST + JWT| B["⚙️ FastAPI\n16 endpoints"] --> C["📦 Python Service Layer\nReview · XP · Achievements"] --> D[("💾 SQLite\nper user")]
 
-    subgraph Backend["Backend · FastAPI"]
-        Auth["JWT Auth · httpOnly Cookies"]
-        API["16 REST Endpoints"]
-    end
-
-    subgraph Core["Service Layer · Python Package"]
-        WS["Word Service"]
-        RE["Review Engine · SM-2"]
-        GS["Gamification · XP, Levels, Streaks"]
-        BS["Book Service"]
-        ACH["Achievements · 10 Milestones"]
-    end
-
-    DB[("SQLite per user\nWAL mode · FTS5")]
-
-    UI & Gamify & PWA -->|"REST + httpOnly JWT"| API
-    API --> Auth
-    API --> WS & RE & GS & BS & ACH
-    WS & RE & GS & BS & ACH --> DB
-
-    style Frontend fill:#1e1b4b,color:#c4b5fd,stroke:#7c3aed
-    style Backend fill:#1e1b4b,color:#c4b5fd,stroke:#7c3aed
-    style Core fill:#1e1b4b,color:#c4b5fd,stroke:#7c3aed
-    style DB fill:#7c3aed,color:#fff,stroke:none
+    style A fill:#1e1b4b,color:#c4b5fd,stroke:#7c3aed
+    style B fill:#1e1b4b,color:#c4b5fd,stroke:#7c3aed
+    style C fill:#1e1b4b,color:#c4b5fd,stroke:#7c3aed
+    style D fill:#7c3aed,color:#fff,stroke:none
 ```
 
-The backend doesn't reimplement business logic - it imports the CLI package and calls service functions directly. Fix something in the service layer and both CLI and web get the fix.
+Three layers, each independently usable. The backend imports the CLI package directly - one fix benefits both web and CLI.
 
 ## Gamification
 
