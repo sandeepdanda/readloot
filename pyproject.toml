@@ -3,16 +3,16 @@ requires = ["setuptools>=64.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "vocabulary-vault"
+name = "readloot"
 version = "0.1.0"
-description = "A CLI tool that turns reading into a vocabulary RPG"
+description = "A vocabulary RPG that turns reading into a game"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}
 dependencies = [
     "click>=8.0",
     "rich>=13.0",
-    "pyfiglet>=1.0",
+    "pyfiglet>=0.8",
 ]
 
 [project.optional-dependencies]
@@ -22,10 +22,10 @@ dev = [
 ]
 
 [project.scripts]
-vault = "vocabulary_vault.cli:vault"
+vault = "readloot.cli:vault"
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.setuptools.package-data]
-vocabulary_vault = ["data/*.json"]
+readloot = ["data/*.json"]

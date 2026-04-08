@@ -1,4 +1,4 @@
-"""Book and chapter management for Vocabulary Vault.
+"""Book and chapter management for ReadLoot.
 
 Handles creation, listing, and detail retrieval for books and chapters.
 Book names are sanitized for filesystem safety while preserving the
@@ -13,8 +13,8 @@ import os
 import re
 import sqlite3
 
-from vocabulary_vault.markdown import generate_chapter_markdown
-from vocabulary_vault.models import Book, Chapter
+from readloot.markdown import generate_chapter_markdown
+from readloot.models import Book, Chapter
 
 
 # Characters invalid in filesystem paths (Windows + common restrictions)

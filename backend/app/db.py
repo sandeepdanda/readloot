@@ -10,7 +10,7 @@ from fastapi import Depends, Request
 
 from app.config import settings
 
-from vocabulary_vault.db import get_db_connection
+from readloot.db import get_db_connection
 
 
 def get_user_db(user_id: int) -> sqlite3.Connection:

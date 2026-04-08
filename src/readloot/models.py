@@ -1,4 +1,4 @@
-"""Data models for Vocabulary Vault."""
+"""Data models for ReadLoot."""
 
 from dataclasses import dataclass, field
 from datetime import date, datetime

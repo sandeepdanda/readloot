@@ -1,11 +1,11 @@
-"""Shared test fixtures for Vocabulary Vault tests."""
+"""Shared test fixtures for ReadLoot tests."""
 
 import sqlite3
 import tempfile
 
 import pytest
 
-from vocabulary_vault.db import init_schema
+from readloot.db import init_schema
 
 
 @pytest.fixture

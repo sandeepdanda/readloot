@@ -12,7 +12,7 @@ from app.db import get_user_db
 from app.schemas import AddWordResponse, WordCreateRequest
 from app.utils import achievement_keys_to_responses, word_entry_to_response
 
-from vocabulary_vault import achievements, book_service, gamification, word_service
+from readloot import achievements, book_service, gamification, word_service
 
 router = APIRouter(prefix="/api/words", tags=["words"])
 

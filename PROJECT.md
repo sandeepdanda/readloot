@@ -23,7 +23,7 @@ Three layers, each independently usable:
 └─────────────────────────────────────────────┘
 ```
 
-The backend does NOT reimplement business logic. It imports the CLI package (`vocabulary_vault`) and calls its service functions directly. Any fix to the service layer benefits both CLI and web.
+The backend does NOT reimplement business logic. It imports the CLI package (`readloot`) and calls its service functions directly. Any fix to the service layer benefits both CLI and web.
 
 ## Tech Stack
 
@@ -39,8 +39,8 @@ The backend does NOT reimplement business logic. It imports the CLI package (`vo
 ## Directory Structure
 
 ```
-vocabulary-vault/
-├── src/vocabulary_vault/       # CLI package (service layer)
+readloot/
+├── src/readloot/       # CLI package (service layer)
 │   ├── cli.py                  # Click CLI commands
 │   ├── models.py               # Dataclasses: Book, Chapter, WordEntry, ReviewRecord, UserStats
 │   ├── db.py                   # SQLite schema init, connection factory
@@ -195,7 +195,7 @@ All routes except auth require a valid JWT in the `access_token` httpOnly cookie
 
 ```bash
 # 1. Install CLI package
-cd vocabulary-vault
+cd readloot
 pip install -e .
 
 # 2. CLI usage (standalone)

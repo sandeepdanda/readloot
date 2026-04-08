@@ -8,7 +8,7 @@ from app.auth import get_current_user
 from app.db import get_user_db
 from app.schemas import BookDetailResponse, BookListItem, ChapterResponse
 
-from vocabulary_vault import book_service
+from readloot import book_service
 
 router = APIRouter(prefix="/api/books", tags=["books"])
 

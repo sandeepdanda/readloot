@@ -5,7 +5,7 @@ from __future__ import annotations
 import sqlite3
 
 from app.schemas import AchievementResponse, WordResponse
-from vocabulary_vault import achievements
+from readloot import achievements
 
 
 def word_entry_to_response(entry) -> WordResponse:

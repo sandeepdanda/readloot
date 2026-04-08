@@ -1,4 +1,4 @@
-"""Click CLI layer for Vocabulary Vault — Rich-enhanced edition.
+"""Click CLI layer for ReadLoot — Rich-enhanced edition.
 
 Wires all service modules together into the ``vault`` command group.
 Registered as the ``vault`` entry point in ``pyproject.toml``.
@@ -18,8 +18,8 @@ import os
 
 import click
 
-from vocabulary_vault.db import get_db_connection
-from vocabulary_vault.wotd import get_word_of_the_day, mark_banner_shown, should_show_banner
+from readloot.db import get_db_connection
+from readloot.wotd import get_word_of_the_day, mark_banner_shown, should_show_banner
 
 # Graceful Rich imports — fall back to None if unavailable
 try:
@@ -148,7 +148,7 @@ def _display_word_detail(entry: dict) -> None:
 @click.group(invoke_without_command=True)
 @click.pass_context
 def vault(ctx):
-    """Vocabulary Vault — your reading companion."""
+    """ReadLoot — your reading companion."""
     ctx.ensure_object(dict)
     db_path = os.environ.get("VAULT_DB_PATH", "vault.db")
     vault_dir = os.environ.get("VAULT_DIR", "vault")
@@ -180,9 +180,9 @@ def vault(ctx):
 @click.pass_context
 def add(ctx, word, book, chapter, meaning, synonyms, context):
     """Add a word to your vault."""
-    from vocabulary_vault import dictionary, gamification, word_service
-    from vocabulary_vault.achievements import check_achievements, show_achievement_toast
-    from vocabulary_vault.book_service import create_book, create_chapter
+    from readloot import dictionary, gamification, word_service
+    from readloot.achievements import check_achievements, show_achievement_toast
+    from readloot.book_service import create_book, create_chapter
 
     conn = ctx.obj["db"]
     vault_dir = ctx.obj["vault_dir"]
@@ -309,7 +309,7 @@ def add(ctx, word, book, chapter, meaning, synonyms, context):
 @click.pass_context
 def lookup(ctx, word):
     """Look up a word in your vault."""
-    from vocabulary_vault import word_service
+    from readloot import word_service
 
     conn = ctx.obj["db"]
     results = word_service.lookup_word(conn, word)
@@ -336,9 +336,9 @@ def lookup(ctx, word):
 @click.pass_context
 def review(ctx, book, chapter):
     """Start a spaced repetition review session."""
-    from vocabulary_vault import gamification
-    from vocabulary_vault.achievements import check_achievements, show_achievement_toast
-    from vocabulary_vault.review_engine import (
+    from readloot import gamification
+    from readloot.achievements import check_achievements, show_achievement_toast
+    from readloot.review_engine import (
         blank_word_in_context,
         get_due_words,
         get_next_review_date,
@@ -451,9 +451,9 @@ def review(ctx, book, chapter):
 @click.pass_context
 def stats(ctx):
     """Display your vocabulary profile and stats."""
-    from vocabulary_vault import gamification
-    from vocabulary_vault.achievements import list_achievements
-    from vocabulary_vault.gamification import READER_LEVELS
+    from readloot import gamification
+    from readloot.achievements import list_achievements
+    from readloot.gamification import READER_LEVELS
 
     conn = ctx.obj["db"]
     profile = gamification.get_profile(conn)
@@ -507,7 +507,7 @@ def stats(ctx):
 
         _console.print(Panel(
             stats_table,
-            title="[bold cyan]📊 Vocabulary Vault Profile[/bold cyan]",
+            title="[bold cyan]📊 ReadLoot Profile[/bold cyan]",
             subtitle=xp_line if xp_line else None,
             border_style="cyan",
             expand=False,
@@ -515,7 +515,7 @@ def stats(ctx):
     else:
         # Plain fallback
         click.echo()
-        click.echo(click.style("📊 Vocabulary Vault Profile", fg="cyan", bold=True))
+        click.echo(click.style("📊 ReadLoot Profile", fg="cyan", bold=True))
         click.echo(click.style("─" * 35, fg="cyan"))
         click.echo(f"  Reader Level:  {click.style(profile['reader_level'], fg='magenta', bold=True)}")
         click.echo(f"  Total XP:      {click.style(str(profile['total_xp']), fg='magenta')}")
@@ -562,7 +562,7 @@ def stats(ctx):
 @click.pass_context
 def books(ctx, book_name):
     """List books or show details for a specific book."""
-    from vocabulary_vault import book_service
+    from readloot import book_service
 
     conn = ctx.obj["db"]
 
@@ -620,7 +620,7 @@ def books(ctx, book_name):
 @click.pass_context
 def sync_cmd(ctx):
     """Sync Markdown files with the SQLite database."""
-    from vocabulary_vault.sync_engine import sync
+    from readloot.sync_engine import sync
 
     conn = ctx.obj["db"]
     vault_dir = ctx.obj["vault_dir"]
@@ -667,7 +667,7 @@ def sync_cmd(ctx):
 @click.pass_context
 def achievements(ctx):
     """Show all achievements and your progress."""
-    from vocabulary_vault.achievements import list_achievements
+    from readloot.achievements import list_achievements
 
     conn = ctx.obj["db"]
     all_achievements = list_achievements(conn)
@@ -720,7 +720,7 @@ def achievements(ctx):
 @click.pass_context
 def export(ctx, output):
     """Export all words to a JSON file."""
-    from vocabulary_vault import word_service
+    from readloot import word_service
 
     conn = ctx.obj["db"]
     data = word_service.export_words(conn)

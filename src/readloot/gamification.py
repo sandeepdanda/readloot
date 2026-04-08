@@ -1,4 +1,4 @@
-"""Gamification engine for Vocabulary Vault — XP, levels, streaks."""
+"""Gamification engine for ReadLoot — XP, levels, streaks."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ READER_LEVELS = [
     (500, "Bookworm"),
     (1500, "Word Smith"),
     (5000, "Lexicon Lord"),
-    (15000, "Vocabulary Vault Master"),
+    (15000, "ReadLoot Master"),
 ]
 
 

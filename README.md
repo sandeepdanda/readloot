@@ -127,7 +127,7 @@ The backend imports the CLI package directly - no duplicated logic. Fixes to the
 | 500 | 🐛 Bookworm |
 | 1,500 | 🔨 Word Smith |
 | 5,000 | 👑 Lexicon Lord |
-| 15,000 | 🏰 Vocabulary Vault Master |
+| 15,000 | 🏰 ReadLoot Master |
 
 > +10 XP per word added · +5 XP per correct review · Streaks track daily activity
 

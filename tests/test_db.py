@@ -7,10 +7,10 @@ import pytest
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
-from vocabulary_vault.db import init_schema
+from readloot.db import init_schema
 
 
-# Feature: vocabulary-vault, Property 8: Referential Integrity Enforcement
+# Feature: readloot, Property 8: Referential Integrity Enforcement
 # Validates: Requirements 4.6
 @settings(max_examples=100, suppress_health_check=[HealthCheck.function_scoped_fixture])
 @given(
@@ -31,7 +31,7 @@ def test_referential_integrity_enforcement(db_conn, book_id, chapter_id):
     db_conn.rollback()
 
 
-# Feature: vocabulary-vault, Property 29: New Word Entry Defaults
+# Feature: readloot, Property 29: New Word Entry Defaults
 # Validates: Requirements 2.3
 @settings(max_examples=100, suppress_health_check=[HealthCheck.function_scoped_fixture])
 @given(

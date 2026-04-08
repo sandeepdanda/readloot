@@ -12,7 +12,7 @@ services:
       - key: SECRET_KEY
         generateValue: true
       - key: ALLOWED_ORIGINS
-        value: https://vocabulary-vault.onrender.com
+        value: https://readloot.onrender.com
       - key: DATA_DIR
         value: /opt/render/project/data
     disk:

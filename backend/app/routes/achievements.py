@@ -8,7 +8,7 @@ from app.auth import get_current_user
 from app.db import get_user_db
 from app.schemas import AchievementResponse
 
-from vocabulary_vault import achievements as ach_module
+from readloot import achievements as ach_module
 
 router = APIRouter(prefix="/api/achievements", tags=["achievements"])
 

@@ -1,4 +1,4 @@
-"""Markdown generation and parsing for Vocabulary Vault chapter files.
+"""Markdown generation and parsing for ReadLoot chapter files.
 
 Each chapter is stored as a single Markdown file with YAML front matter
 (book name, chapter name, chapter number, word count) followed by one
@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from datetime import date
 
-from vocabulary_vault.models import WordEntry
+from readloot.models import WordEntry
 
 
 def generate_chapter_markdown(chapter, entries: list[WordEntry]) -> str:

@@ -1,4 +1,4 @@
-"""Word of the Day service for Vocabulary Vault.
+"""Word of the Day service for ReadLoot.
 
 Selects a daily word from the vault using a date-seeded random generator,
 weighted toward lower mastery levels. Tracks banner display state via
@@ -13,7 +13,7 @@ import random
 import sqlite3
 from datetime import date
 
-from vocabulary_vault.models import WordEntry
+from readloot.models import WordEntry
 
 
 def get_word_of_the_day(

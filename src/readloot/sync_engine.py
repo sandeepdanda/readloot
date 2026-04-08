@@ -1,4 +1,4 @@
-"""Bidirectional sync engine for Vocabulary Vault.
+"""Bidirectional sync engine for ReadLoot.
 
 Reconciles the Markdown store (``vault/`` directory) with the SQLite
 database so that manual edits to either side are reflected in both.
@@ -21,10 +21,10 @@ import sqlite3
 from dataclasses import dataclass, field
 from datetime import date, datetime
 
-from vocabulary_vault.book_service import create_book, create_chapter, sanitize_name
-from vocabulary_vault.markdown import generate_chapter_markdown, parse_chapter_markdown
-from vocabulary_vault.models import Chapter, WordEntry
-from vocabulary_vault.word_service import _regenerate_chapter_markdown
+from readloot.book_service import create_book, create_chapter, sanitize_name
+from readloot.markdown import generate_chapter_markdown, parse_chapter_markdown
+from readloot.models import Chapter, WordEntry
+from readloot.word_service import _regenerate_chapter_markdown
 
 
 @dataclass

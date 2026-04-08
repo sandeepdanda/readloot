@@ -8,7 +8,7 @@ from app.auth import get_current_user
 from app.db import get_user_db
 from app.schemas import WotdResponse
 
-from vocabulary_vault import wotd
+from readloot import wotd
 
 router = APIRouter(prefix="/api/wotd", tags=["wotd"])
 

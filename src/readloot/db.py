@@ -1,4 +1,4 @@
-"""SQLite database connection and schema management for Vocabulary Vault."""
+"""SQLite database connection and schema management for ReadLoot."""
 
 import sqlite3
 

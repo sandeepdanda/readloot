@@ -4,7 +4,7 @@ import os
 
 import pytest
 
-from vocabulary_vault.book_service import (
+from readloot.book_service import (
     create_book,
     create_chapter,
     get_book_details,
@@ -241,8 +241,8 @@ import tempfile
 
 from hypothesis import given, settings, strategies as st
 
-from vocabulary_vault.book_service import sanitize_name, create_book, create_chapter, list_books
-from vocabulary_vault.db import init_schema
+from readloot.book_service import sanitize_name, create_book, create_chapter, list_books
+from readloot.db import init_schema
 
 
 def _fresh_db():
@@ -266,7 +266,7 @@ book_names_with_letters = st.text(
 ).filter(lambda s: any(c.isalpha() for c in s) and len(sanitize_name(s)) > 0)
 
 
-# Feature: vocabulary-vault, Property 4: Book Name Sanitization Preserves Original
+# Feature: readloot, Property 4: Book Name Sanitization Preserves Original
 class TestPropertyBookNameSanitization:
     """**Validates: Requirements 1.5**
 
@@ -311,7 +311,7 @@ class TestPropertyBookNameSanitization:
             conn.close()
 
 
-# Feature: vocabulary-vault, Property 3: Book and Chapter Dual Creation
+# Feature: readloot, Property 3: Book and Chapter Dual Creation
 class TestPropertyBookChapterDualCreation:
     """**Validates: Requirements 1.1, 1.2**
 
@@ -372,7 +372,7 @@ class TestPropertyBookChapterDualCreation:
             conn.close()
 
 
-# Feature: vocabulary-vault, Property 27: Book and Chapter Count Accuracy
+# Feature: readloot, Property 27: Book and Chapter Count Accuracy
 class TestPropertyBookChapterCountAccuracy:
     """**Validates: Requirements 1.3, 1.4**
 

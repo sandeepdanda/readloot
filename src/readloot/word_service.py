@@ -1,4 +1,4 @@
-"""Word entry management for Vocabulary Vault.
+"""Word entry management for ReadLoot.
 
 Handles adding, looking up, searching, and exporting word entries.
 All mutations go through SQLite first, then the corresponding chapter
@@ -13,8 +13,8 @@ import os
 import sqlite3
 from datetime import date, datetime
 
-from vocabulary_vault.markdown import generate_chapter_markdown
-from vocabulary_vault.models import Chapter, WordEntry
+from readloot.markdown import generate_chapter_markdown
+from readloot.models import Chapter, WordEntry
 
 
 def add_word(

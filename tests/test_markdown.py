@@ -5,8 +5,8 @@ from datetime import date
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from vocabulary_vault.markdown import generate_chapter_markdown, parse_chapter_markdown
-from vocabulary_vault.models import Chapter, WordEntry
+from readloot.markdown import generate_chapter_markdown, parse_chapter_markdown
+from readloot.models import Chapter, WordEntry
 
 
 def _make_chapter(book_name: str = "Sapiens", name: str = "The Cognitive Revolution",
@@ -221,7 +221,7 @@ class TestRoundTrip:
         assert parsed == []
 
 
-# Feature: vocabulary-vault, Property 1: Markdown Round-Trip
+# Feature: readloot, Property 1: Markdown Round-Trip
 # **Validates: Requirements 3.6, 3.5**
 
 # Strategy: letters only, no Markdown-breaking chars for word headings
@@ -288,7 +288,7 @@ class TestMarkdownRoundTripProperty:
         assert p.date_added == entry.date_added
 
 
-# Feature: vocabulary-vault, Property 5: Markdown Generation Completeness
+# Feature: readloot, Property 5: Markdown Generation Completeness
 # **Validates: Requirements 3.1, 3.2**
 
 

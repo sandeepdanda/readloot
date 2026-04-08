@@ -11,7 +11,7 @@ const LEVEL_COLORS: Record<string, string> = {
   Bookworm: "text-green-500",
   "Word Smith": "text-purple-500",
   "Lexicon Lord": "text-yellow-500",
-  "Vocabulary Vault Master": "text-red-500",
+  "ReadLoot Master": "text-red-500",
 };
 
 export default function StatsPage() {

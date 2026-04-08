@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from app.auth import get_current_user
 
-from vocabulary_vault import dictionary
+from readloot import dictionary
 
 router = APIRouter(prefix="/api/dictionary", tags=["dictionary"])
 

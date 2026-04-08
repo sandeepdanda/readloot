@@ -15,7 +15,7 @@ from app.schemas import (
 )
 from app.utils import achievement_keys_to_responses, word_entry_to_response
 
-from vocabulary_vault import achievements, gamification, review_engine
+from readloot import achievements, gamification, review_engine
 
 router = APIRouter(prefix="/api/review", tags=["review"])
 

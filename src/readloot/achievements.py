@@ -1,4 +1,4 @@
-"""Achievement system for Vocabulary Vault.
+"""Achievement system for ReadLoot.
 
 Tracks milestones like word counts, streaks, review performance, and
 book collection. Each achievement is unlocked once and persisted in the

@@ -1,4 +1,4 @@
-"""Spaced repetition review engine for Vocabulary Vault.
+"""Spaced repetition review engine for ReadLoot.
 
 Provides the logic functions for selecting due words, processing answers,
 blanking words in context sentences, and querying the next review date.
@@ -14,7 +14,7 @@ import re
 import sqlite3
 from datetime import date, timedelta
 
-from vocabulary_vault.models import WordEntry
+from readloot.models import WordEntry
 
 # SM-2 inspired intervals: days until next review by mastery level.
 REVIEW_INTERVALS = {0: 1, 1: 1, 2: 3, 3: 7, 4: 14, 5: 30}

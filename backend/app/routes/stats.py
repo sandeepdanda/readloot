@@ -8,8 +8,8 @@ from app.auth import get_current_user
 from app.db import get_user_db
 from app.schemas import ProfileResponse
 
-from vocabulary_vault import gamification
-from vocabulary_vault.gamification import READER_LEVELS
+from readloot import gamification
+from readloot.gamification import READER_LEVELS
 
 router = APIRouter(prefix="/api/stats", tags=["stats"])
 
