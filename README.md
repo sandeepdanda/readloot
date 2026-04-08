@@ -113,4 +113,4 @@ Configured for Render.com (`render.yaml`) and Docker (`Dockerfile`). See [PROJEC
 
 ## License
 
-MIT
+MIT - The most popular open-source license in the world, originally written at MIT in 1987. It fits in a tweet: "Do whatever you want with this, just keep the copyright notice, and don't blame me if it breaks." ([Full text](LICENSE))

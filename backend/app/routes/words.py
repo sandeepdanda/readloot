@@ -9,43 +9,12 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from app.auth import get_current_user
 from app.config import settings
 from app.db import get_user_db
-from app.schemas import AddWordResponse, AchievementResponse, WordCreateRequest, WordResponse
+from app.schemas import AddWordResponse, WordCreateRequest
+from app.utils import achievement_keys_to_responses, word_entry_to_response
 
 from vocabulary_vault import achievements, book_service, gamification, word_service
 
 router = APIRouter(prefix="/api/words", tags=["words"])
-
-
-def _word_entry_to_response(entry) -> WordResponse:
-    """Convert a WordEntry dataclass to a WordResponse schema."""
-    return WordResponse(
-        id=entry.id,
-        word=entry.word,
-        meaning=entry.meaning,
-        synonyms=entry.synonyms,
-        context=entry.context,
-        book_name=entry.book_name,
-        chapter_name=entry.chapter_name,
-        date_added=str(entry.date_added),
-        mastery_level=entry.mastery_level,
-    )
-
-
-def _achievement_keys_to_responses(conn, keys: list[str]) -> list[AchievementResponse]:
-    """Convert newly unlocked achievement keys to AchievementResponse list."""
-    all_achs = achievements.list_achievements(conn)
-    return [
-        AchievementResponse(
-            key=a["key"],
-            emoji=a["emoji"],
-            title=a["title"],
-            description=a["description"],
-            earned=a["earned"],
-            earned_at=a["earned_at"],
-        )
-        for a in all_achs
-        if a["key"] in keys
-    ]
 
 
 @router.post("", response_model=AddWordResponse)
@@ -100,13 +69,13 @@ def add_word(body: WordCreateRequest, user: dict = Depends(get_current_user)):
             )
 
         entry = result["entry"]
-        entry_resp = _word_entry_to_response(entry)
+        entry_resp = word_entry_to_response(entry)
 
         # Gamification
         new_xp, level_up = gamification.award_xp(conn, 10)
         streak = gamification.update_streak(conn)
         unlocked_keys = achievements.check_achievements(conn)
-        unlocked = _achievement_keys_to_responses(conn, unlocked_keys)
+        unlocked = achievement_keys_to_responses(conn, unlocked_keys)
 
         return AddWordResponse(
             entry=entry_resp,

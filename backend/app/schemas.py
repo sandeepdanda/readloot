@@ -2,14 +2,14 @@
 
 from __future__ import annotations
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 # --- Auth ---
 
 class UserCreate(BaseModel):
-    username: str
-    password: str
+    username: str = Field(min_length=3, max_length=30)
+    password: str = Field(min_length=8, max_length=128)
 
 
 class UserLogin(BaseModel):
@@ -25,12 +25,12 @@ class TokenResponse(BaseModel):
 # --- Words ---
 
 class WordCreateRequest(BaseModel):
-    word: str
-    meaning: str
-    synonyms: str = ""
-    context: str = ""
-    book_name: str
-    chapter_name: str
+    word: str = Field(min_length=1, max_length=100)
+    meaning: str = Field(min_length=1, max_length=1000)
+    synonyms: str = Field(default="", max_length=500)
+    context: str = Field(default="", max_length=2000)
+    book_name: str = Field(min_length=1, max_length=200)
+    chapter_name: str = Field(min_length=1, max_length=200)
 
 
 class WordResponse(BaseModel):

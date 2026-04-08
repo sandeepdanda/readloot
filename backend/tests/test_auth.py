@@ -15,7 +15,7 @@ class TestRegister:
 
     def test_register_duplicate_username(self, client):
         client.post("/api/auth/register", json={"username": "alice", "password": "pass1234"})
-        resp = client.post("/api/auth/register", json={"username": "alice", "password": "other"})
+        resp = client.post("/api/auth/register", json={"username": "alice", "password": "otherpass123"})
         assert resp.status_code == 400
 
     def test_password_is_hashed(self, client):
@@ -43,7 +43,7 @@ class TestLogin:
         assert resp.status_code == 401
 
     def test_login_nonexistent_user(self, client):
-        resp = client.post("/api/auth/login", json={"username": "nobody", "password": "pass"})
+        resp = client.post("/api/auth/login", json={"username": "nobody", "password": "password123"})
         assert resp.status_code == 401
 
 
