@@ -16,6 +16,11 @@ from datetime import date, datetime
 from readloot.markdown import generate_chapter_markdown
 from readloot.models import Chapter, WordEntry
 
+# Sentinel next_review for auto-extracted words while their chapter is locked.
+# get_due_words filters next_review <= today, so this keeps locked words out of
+# the review queue until mark_chapter_read pulls them forward to today.
+LOCKED_REVIEW_DATE = "9999-12-31"
+
 
 def add_word(
     conn: sqlite3.Connection,
@@ -166,6 +171,136 @@ def add_word(
 
 
 
+def add_words_bulk(
+    conn: sqlite3.Connection,
+    vault_dir: str,
+    book_name: str,
+    chapter_name: str,
+    words: list[dict],
+    source: str = "auto",
+    locked: bool = True,
+) -> dict:
+    """Insert many word entries for one chapter in a single transaction.
+
+    Built for auto-extraction: one commit and one Markdown rewrite for the
+    whole chapter instead of per word. Duplicates (same word+chapter) are
+    skipped, not errored.
+
+    Parameters
+    ----------
+    words : list[dict]
+        Each needs ``word`` and ``meaning``; ``synonyms`` and ``context`` are
+        optional.
+    source : str
+        ``'auto'`` or ``'manual'`` — recorded on each row.
+    locked : bool
+        When true, rows get the far-future :data:`LOCKED_REVIEW_DATE` so they
+        stay out of the review queue until the chapter is marked read.
+
+    Returns
+    -------
+    dict
+        ``{"inserted": int, "skipped": int}``.
+    """
+    book_row = conn.execute(
+        "SELECT id FROM books WHERE name = ?", (book_name,)
+    ).fetchone()
+    if book_row is None:
+        raise ValueError(f"Book not found: {book_name}")
+    book_id = book_row["id"]
+
+    chapter_row = conn.execute(
+        "SELECT id FROM chapters WHERE book_id = ? AND name = ?",
+        (book_id, chapter_name),
+    ).fetchone()
+    if chapter_row is None:
+        raise ValueError(f"Chapter not found: {chapter_name}")
+    chapter_id = chapter_row["id"]
+
+    today = date.today().isoformat()
+    now = datetime.now().isoformat()
+    review_date = LOCKED_REVIEW_DATE if locked else today
+
+    inserted = 0
+    skipped = 0
+    for w in words:
+        word = (w.get("word") or "").strip()
+        meaning = (w.get("meaning") or "").strip()
+        if not word or not meaning:
+            skipped += 1
+            continue
+        synonyms = w.get("synonyms", "") or ""
+        context = w.get("context", "") or ""
+
+        exists = conn.execute(
+            "SELECT 1 FROM word_entries WHERE word = ? AND chapter_id = ?",
+            (word, chapter_id),
+        ).fetchone()
+        if exists is not None:
+            skipped += 1
+            continue
+
+        cursor = conn.execute(
+            """
+            INSERT INTO word_entries
+                (word, meaning, synonyms, context, book_id, chapter_id,
+                 date_added, date_modified, mastery_level, next_review, source)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)
+            """,
+            (word, meaning, synonyms, context, book_id, chapter_id,
+             today, now, review_date, source),
+        )
+        conn.execute(
+            """
+            INSERT INTO word_entries_fts(rowid, word, meaning, synonyms, context)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (cursor.lastrowid, word, meaning, synonyms, context),
+        )
+        inserted += 1
+
+    conn.commit()
+    if inserted:
+        _regenerate_chapter_markdown(conn, vault_dir, chapter_id)
+    return {"inserted": inserted, "skipped": skipped}
+
+
+def mark_chapter_read(
+    conn: sqlite3.Connection,
+    chapter_id: int,
+) -> dict:
+    """Unlock a chapter's auto-words and record reading progress.
+
+    Idempotent: marking an already-read chapter unlocks nothing new and
+    reports ``newly_unlocked == 0``. Only locked rows
+    (next_review == LOCKED_REVIEW_DATE) are pulled forward to today so they
+    enter the review queue; manually added words are untouched.
+
+    Returns
+    -------
+    dict
+        ``{"newly_unlocked": int, "already_read": bool}``.
+    """
+    already = conn.execute(
+        "SELECT 1 FROM reading_progress WHERE chapter_id = ?", (chapter_id,)
+    ).fetchone() is not None
+
+    today = date.today().isoformat()
+    cursor = conn.execute(
+        "UPDATE word_entries SET next_review = ? "
+        "WHERE chapter_id = ? AND next_review = ?",
+        (today, chapter_id, LOCKED_REVIEW_DATE),
+    )
+    unlocked = cursor.rowcount
+
+    conn.execute(
+        "INSERT OR IGNORE INTO reading_progress (chapter_id) VALUES (?)",
+        (chapter_id,),
+    )
+    conn.commit()
+    return {"newly_unlocked": unlocked, "already_read": already}
+
+
 def lookup_word(conn: sqlite3.Connection, word: str) -> list[dict]:
     """Look up a word across all books and chapters.
 
@@ -232,7 +367,8 @@ def search_words(conn: sqlite3.Connection, query: str) -> list[dict]:
 
     rows = conn.execute(
         """
-        SELECT w.word, w.meaning, w.synonyms, w.context,
+        SELECT w.id, w.word, w.meaning, w.synonyms, w.context,
+               w.mastery_level, w.date_added, w.source,
                b.name AS book_name, c.name AS chapter_name
         FROM word_entries_fts fts
         JOIN word_entries w ON fts.rowid = w.id
@@ -244,14 +380,21 @@ def search_words(conn: sqlite3.Connection, query: str) -> list[dict]:
         (query,),
     ).fetchall()
 
+    from readloot.vocab_extractor import rarity_tier
+
     return [
         {
+            "id": r["id"],
             "word": r["word"],
             "meaning": r["meaning"],
             "synonyms": r["synonyms"],
             "context": r["context"],
             "book_name": r["book_name"],
             "chapter_name": r["chapter_name"],
+            "mastery_level": r["mastery_level"],
+            "date_added": r["date_added"],
+            "source": r["source"],
+            "rarity": rarity_tier(r["word"]),
         }
         for r in rows
     ]

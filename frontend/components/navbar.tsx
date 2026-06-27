@@ -13,11 +13,13 @@ import {
   Trophy,
   Settings,
   MoreHorizontal,
+  Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/discover", label: "Discover", icon: Sparkles },
   { href: "/add", label: "Add Word", icon: PlusCircle },
   { href: "/search", label: "Search", icon: Search },
   { href: "/review", label: "Review", icon: RotateCcw },
@@ -37,6 +39,7 @@ const mobileItems = [
 ];
 
 const moreItems = [
+  { href: "/discover", label: "Discover", icon: Sparkles },
   { href: "/search", label: "Search", icon: Search },
   { href: "/achievements", label: "Achievements", icon: Trophy },
   { href: "/settings", label: "Settings", icon: Settings },

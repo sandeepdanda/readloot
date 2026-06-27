@@ -1,0 +1,14 @@
+[
+  {"gutenberg_id": 1661, "title": "The Adventures of Sherlock Holmes", "author": "Arthur Conan Doyle", "subject": "Detective fiction"},
+  {"gutenberg_id": 1342, "title": "Pride and Prejudice", "author": "Jane Austen", "subject": "Romance"},
+  {"gutenberg_id": 84, "title": "Frankenstein", "author": "Mary Wollstonecraft Shelley", "subject": "Gothic fiction"},
+  {"gutenberg_id": 11, "title": "Alice's Adventures in Wonderland", "author": "Lewis Carroll", "subject": "Fantasy"},
+  {"gutenberg_id": 345, "title": "Dracula", "author": "Bram Stoker", "subject": "Gothic horror"},
+  {"gutenberg_id": 174, "title": "The Picture of Dorian Gray", "author": "Oscar Wilde", "subject": "Philosophical fiction"},
+  {"gutenberg_id": 1952, "title": "The Yellow Wallpaper", "author": "Charlotte Perkins Gilman", "subject": "Short story"},
+  {"gutenberg_id": 2701, "title": "Moby Dick; or, The Whale", "author": "Herman Melville", "subject": "Adventure"},
+  {"gutenberg_id": 1080, "title": "A Modest Proposal", "author": "Jonathan Swift", "subject": "Satire"},
+  {"gutenberg_id": 64317, "title": "The Great Gatsby", "author": "F. Scott Fitzgerald", "subject": "Literary fiction"},
+  {"gutenberg_id": 16, "title": "Peter Pan", "author": "J. M. Barrie", "subject": "Fantasy"},
+  {"gutenberg_id": 98, "title": "A Tale of Two Cities", "author": "Charles Dickens", "subject": "Historical fiction"}
+]

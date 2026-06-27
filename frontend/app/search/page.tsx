@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { RarityGem, EvolutionGlyph } from "@/components/word-badges";
 import * as api from "@/lib/api";
 import type { WordResponse } from "@/lib/types";
 
@@ -113,12 +114,19 @@ export default function SearchPage() {
             <Card key={`${word.id}-${word.book_name}`}>
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg text-primary">
+                  <CardTitle className="flex items-center gap-2 text-lg text-primary">
                     {word.word}
+                    <RarityGem rarity={word.rarity} />
                   </CardTitle>
-                  <Badge variant="outline">
-                    Mastery {word.mastery_level}/5
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                      {word.source === "auto" ? "✨ Suggested" : "🔖 Saved"}
+                    </span>
+                    <Badge variant="outline" className="gap-1">
+                      <EvolutionGlyph masteryLevel={word.mastery_level} />
+                      Mastery {word.mastery_level}/5
+                    </Badge>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-2">

@@ -47,7 +47,7 @@ def get_due_words(
     query = """
         SELECT w.id, w.word, w.meaning, w.synonyms, w.context,
                w.book_id, w.chapter_id, w.date_added, w.date_modified,
-               w.mastery_level, w.next_review,
+               w.mastery_level, w.next_review, w.source,
                b.name AS book_name, c.name AS chapter_name
         FROM word_entries w
         JOIN books b ON w.book_id = b.id
@@ -198,4 +198,5 @@ def _row_to_word_entry(row: sqlite3.Row) -> WordEntry:
         date_added=date.fromisoformat(row["date_added"]),
         mastery_level=row["mastery_level"],
         next_review=date.fromisoformat(row["next_review"]),
+        source=row["source"] if "source" in row.keys() else "manual",
     )

@@ -38,6 +38,8 @@ export interface WordResponse {
   chapter_name: string;
   date_added: string;
   mastery_level: number;
+  source?: "manual" | "auto";
+  rarity?: "common" | "uncommon" | "rare" | "epic" | "legendary";
 }
 
 export interface AddWordResponse {
@@ -155,4 +157,40 @@ export interface GamificationEvent {
   new_total_xp: number;
   level_up: string | null;
   achievements_unlocked: AchievementResponse[];
+}
+
+// --- Catalog / auto-import ---
+
+export interface CatalogItem {
+  gutenberg_id: number;
+  title: string;
+  author: string;
+  subject: string;
+}
+
+export interface ImportStatus {
+  gutenberg_id: number;
+  state: "queued" | "fetching" | "extracting" | "done" | "error" | "unknown";
+  progress: number;
+  total: number;
+  words: number;
+  book_name: string | null;
+  error: string | null;
+}
+
+export interface ChapterProgressItem {
+  id: number;
+  name: string;
+  chapter_number: number;
+  word_count: number;
+  is_read: boolean;
+  is_locked: boolean;
+}
+
+export interface MarkReadResponse {
+  chapter_id: number;
+  newly_unlocked: number;
+  already_read: boolean;
+  xp_earned: number;
+  new_total_xp: number;
 }

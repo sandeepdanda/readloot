@@ -65,13 +65,47 @@ CREATE TABLE IF NOT EXISTS achievements (
     earned_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
+-- Tracks which chapters the user has marked as read. A chapter's auto-extracted
+-- words stay locked (far-future next_review) until a row appears here.
+CREATE TABLE IF NOT EXISTS reading_progress (
+    chapter_id INTEGER PRIMARY KEY REFERENCES chapters(id) ON DELETE CASCADE,
+    read_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+-- Local cache of Gutenberg/Gutendex metadata for imported books. Distinct from
+-- the per-user `books` table: this is catalog data keyed by Gutenberg id.
+CREATE TABLE IF NOT EXISTS book_catalog (
+    gutenberg_id INTEGER PRIMARY KEY,
+    title TEXT NOT NULL,
+    author TEXT NOT NULL DEFAULT '',
+    cover_url TEXT NOT NULL DEFAULT '',
+    download_url TEXT NOT NULL DEFAULT '',
+    language TEXT NOT NULL DEFAULT 'en',
+    cached_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
 INSERT OR IGNORE INTO user_stats (id) VALUES (1);
 """
 
 
+def _migrate(conn: sqlite3.Connection) -> None:
+    """Apply guarded, idempotent column additions.
+
+    ``ALTER TABLE ADD COLUMN`` cannot use ``IF NOT EXISTS``, and this runs on
+    every connection, so each add is gated on a ``PRAGMA table_info`` check.
+    """
+    cols = {row[1] for row in conn.execute("PRAGMA table_info(word_entries)")}
+    if "source" not in cols:
+        # Existing rows are manual entries; auto-extracted words set 'auto'.
+        conn.execute(
+            "ALTER TABLE word_entries ADD COLUMN source TEXT NOT NULL DEFAULT 'manual'"
+        )
+
+
 def init_schema(conn: sqlite3.Connection) -> None:
-    """Create all tables if they don't exist."""
+    """Create all tables if they don't exist, then apply migrations."""
     conn.executescript(_SCHEMA_SQL)
+    _migrate(conn)
     conn.commit()
 
 

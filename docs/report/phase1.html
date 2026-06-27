@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ReadLoot — Phase 1: Auto-Vocabulary from Books</title>
+<style>
+  :root {
+    --bg:#0d1117; --panel:#161b22; --border:#30363d;
+    --text:#c9d1d9; --muted:#8b949e; --heading:#e6edf3;
+    --green:#3fb950; --red:#f85149; --blue:#58a6ff; --yellow:#d29922; --purple:#a371f7;
+    --green-bg:#0f2417; --red-bg:#2a1416;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Helvetica,Arial,sans-serif;
+    line-height:1.55; padding:40px 24px 80px; }
+  .wrap { max-width:1100px; margin:0 auto; }
+  h1 { color:var(--heading); font-size:30px; margin:0 0 6px; }
+  h2 { color:var(--heading); font-size:21px; margin:48px 0 16px; padding-bottom:8px; border-bottom:1px solid var(--border); }
+  h3 { color:var(--heading); font-size:15px; margin:0 0 8px; }
+  .sub { color:var(--muted); margin:0 0 8px; }
+  a { color:var(--blue); text-decoration:none; }
+  code { background:#1f2630; padding:1px 6px; border-radius:5px; font-size:12.5px; font-family:"SF Mono",Menlo,Consolas,monospace; color:#e6edf3; }
+  .cards { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin:24px 0; }
+  .card { background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:18px; }
+  .card .num { font-size:30px; font-weight:700; color:var(--heading); }
+  .card .lbl { color:var(--muted); font-size:12.5px; text-transform:uppercase; letter-spacing:.04em; margin-bottom:4px; }
+  .card .delta { font-size:12.5px; margin-top:4px; }
+  .up { color:var(--green); } .down { color:var(--red); } .flat { color:var(--muted); }
+  .split { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:16px 0; }
+  .pane { border:1px solid var(--border); border-radius:10px; overflow:hidden; background:var(--panel); }
+  .pane .head { padding:10px 14px; font-weight:600; font-size:13px; }
+  .pane.before .head { background:var(--red-bg); color:var(--red); }
+  .pane.after .head { background:var(--green-bg); color:var(--green); }
+  .pane .body { padding:14px; }
+  pre { margin:0; background:#0b0f14; border-radius:8px; padding:12px 14px; overflow-x:auto;
+        font-family:"SF Mono",Menlo,Consolas,monospace; font-size:12px; line-height:1.5; color:#c9d1d9; }
+  .pre-red { border-left:3px solid var(--red); }
+  .pre-green { border-left:3px solid var(--green); }
+  ul.tight { margin:6px 0 0; padding-left:18px; } ul.tight li { margin:3px 0; font-size:13.5px; }
+  table { width:100%; border-collapse:collapse; margin:14px 0; background:var(--panel); border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+  th, td { text-align:left; padding:10px 14px; border-bottom:1px solid var(--border); font-size:13.5px; vertical-align:top; }
+  th { background:#1c232c; color:var(--muted); font-weight:600; text-transform:uppercase; font-size:11.5px; letter-spacing:.04em; }
+  tr:last-child td { border-bottom:none; }
+  .tag { display:inline-block; padding:2px 9px; border-radius:20px; font-size:11px; font-weight:600; }
+  .t-done { background:var(--green-bg); color:var(--green); }
+  .t-fix { background:#2a230f; color:var(--yellow); }
+  .t-you { background:#1b2a3a; color:var(--blue); }
+  .shots { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:16px 0; }
+  .shot { border:1px solid var(--border); border-radius:10px; overflow:hidden; background:var(--panel); }
+  .shot .cap { padding:9px 14px; font-size:13px; color:var(--muted); border-bottom:1px solid var(--border); }
+  .shot img { width:100%; display:block; }
+  .shot.wide { grid-column:1 / -1; }
+  .phase { background:var(--panel); border:1px solid var(--border); border-left:3px solid var(--green); border-radius:8px; padding:14px 16px; margin:10px 0; }
+  .phase .pt { color:var(--heading); font-weight:600; font-size:14px; }
+  .phase .pp { color:var(--muted); font-size:13px; margin:4px 0 0; }
+  .phase .proof { color:var(--green); font-size:12.5px; margin-top:6px; font-family:"SF Mono",Menlo,monospace; }
+  .note { background:#13202e; border:1px solid #1b3149; border-radius:8px; padding:12px 16px; margin:14px 0; font-size:13.5px; }
+  footer { margin-top:60px; padding-top:18px; border-top:1px solid var(--border); color:var(--muted); font-size:12.5px; }
+  .pill { display:inline-block; background:var(--green-bg); color:var(--green); border:1px solid #1d4427; padding:3px 12px; border-radius:20px; font-size:12px; font-weight:600; }
+  .flow { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:14px 0; font-size:13px; }
+  .flow .step { background:var(--panel); border:1px solid var(--border); border-radius:20px; padding:6px 14px; }
+  .flow .arr { color:var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>ReadLoot — Phase 1: Auto-Vocabulary from Books</h1>
+  <p class="sub">Added the headline feature from the roadmap to a shipped v1 full-stack vocabulary RPG: import a public-domain book, auto-extract the words worth learning per chapter, gate them behind chapter unlocks, and feed them into the existing spaced-repetition queue.</p>
+  <p><span class="pill">✓ 56 CLI + 34 API tests pass</span> &nbsp; <span class="pill">✓ frontend build clean</span> &nbsp; <span class="pill">✓ verified end-to-end in browser</span></p>
+
+  <div class="cards">
+    <div class="card"><div class="lbl">New backend tests</div><div class="num">+13</div><div class="delta up">▲ 47→56 CLI, 28→34 API</div></div>
+    <div class="card"><div class="lbl">CEFR-graded words</div><div class="num">8,653</div><div class="delta up">▲ CEFR-J + Octanove A1–C2</div></div>
+    <div class="card"><div class="lbl">Catalog books</div><div class="num">12</div><div class="delta up">▲ from 0 (live Gutenberg text)</div></div>
+    <div class="card"><div class="lbl">New frontend pages</div><div class="num">2</div><div class="delta up">▲ Discover + Library unlock</div></div>
+  </div>
+
+  <div class="note">
+    <strong>The feature:</strong> a user searches the book catalog, imports a title, and the system fetches the real text from Project Gutenberg, splits it into chapters, and picks ~12 rare/B2+ words per chapter with offline WordNet definitions. Those words are <strong>locked</strong> — parked at a far-future review date — until the user marks that chapter read, which unlocks them into the review queue and awards XP. Auto-picked words read as <code>✨ Suggested</code>; user-added words stay <code>🔖 Saved</code>.
+  </div>
+
+  <div class="flow">
+    <span class="step">🔎 Search catalog</span><span class="arr">→</span>
+    <span class="step">✨ Import book</span><span class="arr">→</span>
+    <span class="step">📖 Fetch + split chapters</span><span class="arr">→</span>
+    <span class="step">🔒 Extract gated vocab</span><span class="arr">→</span>
+    <span class="step">✅ Mark chapter read</span><span class="arr">→</span>
+    <span class="step">🧠 Words enter review</span>
+  </div>
+
+  <h2>Before / after</h2>
+  <div class="split">
+    <div class="pane before">
+      <div class="head">● BEFORE — v1</div>
+      <div class="body">
+        <ul class="tight">
+          <li>Vocabulary added one word at a time, by hand</li>
+          <li>No book source — "books" were just folders the user named</li>
+          <li>No NLP, no difficulty grading, no auto-definitions</li>
+          <li>Every inserted word was immediately due for review</li>
+          <li><code>books/[name]</code> page crashed on Next 14.2 (<code>use()</code> on a non-promise)</li>
+          <li>Search results showed blank mastery and no word origin</li>
+        </ul>
+      </div>
+    </div>
+    <div class="pane after">
+      <div class="head">● AFTER — Phase 1</div>
+      <div class="body">
+        <ul class="tight">
+          <li>Import a real public-domain book; vocab generated automatically</li>
+          <li>spaCy lemmatize → CEFR-J/Octanove + wordfreq difficulty → top 12/chapter</li>
+          <li>Offline WordNet definitions + synonyms, no per-word API calls</li>
+          <li>Chapter-gating: auto-words locked until the chapter is marked read</li>
+          <li>Live Gutenberg fetch, background extraction, pollable progress</li>
+          <li>Auto vs manual cue; both crashing detail pages fixed</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <h2>Example: the gating mechanic</h2>
+  <div class="split">
+    <div class="pane before">
+      <div class="head">● PROBLEM — words default to due today</div>
+      <div class="body">
+<pre class="pre-red">-- db.py schema
+next_review TEXT NOT NULL DEFAULT (date('now'))
+
+-- get_due_words filters next_review &lt;= today
+-- so ANY inserted word is instantly in
+-- the review queue. Importing a whole book
+-- would dump every word at once and spoil
+-- later chapters.</pre>
+      </div>
+    </div>
+    <div class="pane after">
+      <div class="head">● FIX — far-future sentinel until unlock</div>
+      <div class="body">
+<pre class="pre-green">LOCKED_REVIEW_DATE = "9999-12-31"
+
+# auto-words inserted locked:
+add_words_bulk(..., locked=True)
+#   -&gt; next_review = LOCKED_REVIEW_DATE
+#   -&gt; get_due_words skips them (no query change)
+
+def mark_chapter_read(conn, chapter_id):
+    # pull locked rows forward to today
+    UPDATE word_entries SET next_review = today
+    WHERE chapter_id = ? AND next_review = LOCKED_REVIEW_DATE
+    # idempotent; awards XP once</pre>
+      </div>
+    </div>
+  </div>
+  <p class="sub">No change to the review query — the sentinel rides the existing <code>next_review &lt;= today</code> filter. Manual words are untouched.</p>
+
+  <h2>Live UI (captured from the running app)</h2>
+  <div class="shots">
+    <div class="shot wide"><div class="cap">Discover — curated public-domain catalog, import with live progress, example-search chips</div><img src="img/discover.png" alt="Discover" /></div>
+    <div class="shot"><div class="cap">Library — chapters locked; one bright "current" row, the rest "Read Ch. N to unlock"</div><img src="img/library-locked.png" alt="Library locked" /></div>
+    <div class="shot"><div class="cap">Library — after Mark-as-read: 2/12, next row promotes, +15 XP burst</div><img src="img/library-unlocked.png" alt="Library unlocked" /></div>
+    <div class="shot"><div class="cap">Search — auto-extracted word shows ✨ Suggested + real mastery</div><img src="img/search-suggested.png" alt="Search suggested" /></div>
+    <div class="shot"><div class="cap">Review — unlocked auto-words flow into the existing SM-2 queue</div><img src="img/review.png" alt="Review" /></div>
+  </div>
+
+  <h2>What got built — 4 slices</h2>
+  <div class="phase"><div class="pt">Slice 0 · Migrations</div><div class="pp">Guarded, idempotent additive migration: <code>word_entries.source</code> (default 'manual'), <code>reading_progress</code>, <code>book_catalog</code> (distinct from the per-user <code>books</code> table). Runs safely on every connect via a <code>PRAGMA table_info</code> guard.</div><div class="proof">✓ connect twice, no "duplicate column" · 46/46 baseline green</div></div>
+  <div class="phase"><div class="pt">Slice 1 · Extractor + gated bulk insert</div><div class="pp">spaCy (parser/NER excluded) → CEFR-J/Octanove level + wordfreq Zipf fallback → top-N rare words → WordNet definition. New batch insert path (one commit + one Markdown rewrite per chapter) with insert-time locking.</div><div class="proof">✓ 10 unit tests · 300-page book extracts in ~2s warm</div></div>
+  <div class="phase"><div class="pt">Slice 2 · Gutenberg import (backend)</div><div class="pp">Bundled catalog search (Gutendex was DNS-dead), live gutenberg.org plaintext fetch, chapter split with heading detection + chunk fallback, threaded import with pollable status, mark-read unlock endpoint.</div><div class="proof">✓ 6 API tests · live import: Alice 12 ch / 144 words</div></div>
+  <div class="phase"><div class="pt">Slice 3 · Frontend</div><div class="pp">Discover page (search + import progress), Library page (chapter lock/unlock with Framer Motion unlock animation + XP burst, reduced-motion safe), auto/manual word cue, nav entries.</div><div class="proof">✓ next build — 13 routes, exit 0</div></div>
+  <div class="phase"><div class="pt">Slice 4 · Verify</div><div class="pp">Full lifecycle driven in a real browser via Playwright: login → discover → import → lock state → mark-read → unlock → search cue → review.</div><div class="proof">✓ 56 CLI + 34 API green · 0 errors from new code</div></div>
+
+  <h2>Bugs found &amp; fixed</h2>
+  <table>
+    <tr><th>Bug</th><th>Root cause</th><th>Fix</th><th></th></tr>
+    <tr><td>Book detail pages crashed: "unsupported type passed to use()"</td><td>v1 used Next 15's <code>use(params)</code>, but the repo runs Next 14.2 which passes <code>params</code> as a plain object</td><td>Support both: unwrap only if it's a thenable. Fixed my Library page and the pre-existing Books page</td><td><span class="tag t-fix">fixed</span></td></tr>
+    <tr><td>Auto-words showed "🔖 Saved" + blank mastery in search</td><td><code>search_words</code> never selected <code>source</code>, <code>id</code>, or <code>mastery_level</code></td><td>Added the columns to the FTS query and response</td><td><span class="tag t-fix">fixed</span></td></tr>
+    <tr><td>Importing a book would spoil later chapters</td><td>Words default to due today; no unlock gate existed</td><td>Far-future sentinel + mark-read; designed in, not patched after</td><td><span class="tag t-done">designed</span></td></tr>
+  </table>
+
+  <h2>Known / not in scope</h2>
+  <table>
+    <tr><td>Pre-existing flaky test <code>test_new_word_entry_defaults</code> — asserts <code>next_review</code> default against Python local date, but SQLite <code>date('now')</code> is UTC. Fails every evening after 5pm PDT. Not mine; left untouched.</td><td><span class="tag t-you">pre-existing</span></td></tr>
+    <tr><td>Gutendex hosted API is DNS-dead — search uses a bundled catalog. Swap in live Gutendex later by replacing one function.</td><td><span class="tag t-you">deferred</span></td></tr>
+    <tr><td>Roadmap Phases 2–5 (rarity tiers, evolution, FSRS) — not started.</td><td><span class="tag t-you">later</span></td></tr>
+    <tr><td>Review the diff, then <code>git add / commit</code> (left to you).</td><td><span class="tag t-you">needs you</span></td></tr>
+  </table>
+
+  <h3 style="margin-top:24px;">Run it yourself</h3>
+<pre>cd readloot && python3.12 -m venv .venv && source .venv/bin/activate
+pip install -e ".[dev]" -r backend/requirements.txt
+pip install "spacy&gt;=3.8,&lt;3.9" "wordfreq&gt;=3.1" "nltk&gt;=3.9" requests
+python -m spacy download en_core_web_sm
+python -c "import nltk; nltk.download('wordnet'); nltk.download('omw-1.4')"
+
+cd backend && uvicorn app.main:app --port 8000   <span style="color:#8b949e"># API</span>
+cd frontend && npm install && npm run dev          <span style="color:#8b949e"># :3000</span>
+python -m pytest tests backend/tests               <span style="color:#8b949e"># 90 tests</span></pre>
+
+  <footer>
+    Generated for sdad · served on 127.0.0.1 · screenshots captured from the running stack (frontend :3000 → backend :8000) with a real Gutenberg import. Metrics from <code>pytest</code>, <code>find</code>, and the bundled data files — not estimated.
+  </footer>
+
+</div>
+</body>
+</html>

@@ -43,6 +43,7 @@ class WordEntry:
     date_modified: datetime = field(default_factory=datetime.now)
     mastery_level: int = 0
     next_review: date = field(default_factory=date.today)
+    source: str = "manual"  # 'manual' (user-added) or 'auto' (extracted from book)
 
 
 @dataclass

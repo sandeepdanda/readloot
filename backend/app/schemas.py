@@ -43,6 +43,8 @@ class WordResponse(BaseModel):
     chapter_name: str
     date_added: str
     mastery_level: int
+    source: str = "manual"
+    rarity: str = "common"
 
 
 class AddWordResponse(BaseModel):
@@ -136,6 +138,42 @@ class BookDetailResponse(BaseModel):
     word_count: int
     chapter_count: int
     chapters: list[ChapterResponse]
+
+
+# --- Catalog / auto-import ---
+
+class CatalogItem(BaseModel):
+    gutenberg_id: int
+    title: str
+    author: str
+    subject: str = ""
+
+
+class ImportStatusResponse(BaseModel):
+    gutenberg_id: int
+    state: str  # queued | fetching | extracting | done | error | unknown
+    progress: int  # chapters processed
+    total: int     # chapters total
+    words: int     # words inserted so far
+    book_name: str | None = None
+    error: str | None = None
+
+
+class ChapterProgressItem(BaseModel):
+    id: int
+    name: str
+    chapter_number: int
+    word_count: int
+    is_read: bool
+    is_locked: bool
+
+
+class MarkReadResponse(BaseModel):
+    chapter_id: int
+    newly_unlocked: int
+    already_read: bool
+    xp_earned: int
+    new_total_xp: int
 
 
 # Fix forward references for AddWordResponse and ReviewSessionSummary

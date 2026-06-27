@@ -6,6 +6,7 @@ import sqlite3
 
 from app.schemas import AchievementResponse, WordResponse
 from readloot import achievements
+from readloot.vocab_extractor import rarity_tier
 
 
 def word_entry_to_response(entry) -> WordResponse:
@@ -20,6 +21,8 @@ def word_entry_to_response(entry) -> WordResponse:
         chapter_name=entry.chapter_name,
         date_added=str(entry.date_added),
         mastery_level=entry.mastery_level,
+        source=getattr(entry, "source", "manual"),
+        rarity=rarity_tier(entry.word),
     )
 
 

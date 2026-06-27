@@ -14,6 +14,10 @@ import type {
   BookDetailResponse,
   DictionaryResult,
   ReviewScope,
+  CatalogItem,
+  ImportStatus,
+  ChapterProgressItem,
+  MarkReadResponse,
 } from "./types";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -170,5 +174,38 @@ export async function lookupDictionary(
 ): Promise<DictionaryResult> {
   return request<DictionaryResult>(
     `/api/dictionary/lookup/${encodeURIComponent(word)}`,
+  );
+}
+
+// --- Catalog / auto-import ---
+
+export async function searchCatalog(q: string): Promise<CatalogItem[]> {
+  return request<CatalogItem[]>(`/api/catalog/search?q=${encodeURIComponent(q)}`);
+}
+
+export async function importBook(gutenbergId: number): Promise<ImportStatus> {
+  return request<ImportStatus>(`/api/catalog/import/${gutenbergId}`, {
+    method: "POST",
+  });
+}
+
+export async function getImportStatus(gutenbergId: number): Promise<ImportStatus> {
+  return request<ImportStatus>(`/api/catalog/import/${gutenbergId}/status`);
+}
+
+export async function getBookChapters(
+  bookName: string,
+): Promise<ChapterProgressItem[]> {
+  return request<ChapterProgressItem[]>(
+    `/api/catalog/books/${encodeURIComponent(bookName)}/chapters`,
+  );
+}
+
+export async function markChapterRead(
+  chapterId: number,
+): Promise<MarkReadResponse> {
+  return request<MarkReadResponse>(
+    `/api/catalog/chapters/${chapterId}/mark-read`,
+    { method: "POST" },
   );
 }

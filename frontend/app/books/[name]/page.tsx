@@ -10,10 +10,14 @@ import * as api from "@/lib/api";
 export default function BookDetailPage({
   params,
 }: {
-  params: Promise<{ name: string }>;
+  params: Promise<{ name: string }> | { name: string };
 }) {
-  const { name } = use(params);
-  const bookName = decodeURIComponent(name);
+  // Next 14.2 passes params as a plain object; Next 15 as a Promise. Support both.
+  const resolved =
+    typeof (params as Promise<{ name: string }>).then === "function"
+      ? use(params as Promise<{ name: string }>)
+      : (params as { name: string });
+  const bookName = decodeURIComponent(resolved.name);
   const [expandedChapter, setExpandedChapter] = useState<number | null>(null);
 
   const book = useQuery({
@@ -29,7 +33,7 @@ export default function BookDetailPage({
             ← Back
           </Button>
         </Link>
-        <div>
+        <div className="flex-1">
           <h1 className="text-3xl font-bold">{bookName}</h1>
           {book.data && (
             <p className="text-muted-foreground mt-1">
@@ -39,6 +43,9 @@ export default function BookDetailPage({
             </p>
           )}
         </div>
+        <Link href={`/library/${encodeURIComponent(bookName)}`}>
+          <Button variant="outline" size="sm">Chapters &amp; unlocks</Button>
+        </Link>
       </div>
 
       {book.isLoading && (

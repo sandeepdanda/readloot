@@ -11,7 +11,16 @@ from fastapi.staticfiles import StaticFiles
 
 from app.auth import init_users_db, router as auth_router
 from app.config import settings
-from app.routes import achievements, books, dictionary, review, stats, words, wotd
+from app.routes import (
+    achievements,
+    books,
+    catalog,
+    dictionary,
+    review,
+    stats,
+    words,
+    wotd,
+)
 
 app = FastAPI(title="ReadLoot API", version="0.1.0")
 
@@ -31,6 +40,7 @@ app.include_router(auth_router)
 # Include protected routes
 app.include_router(words.router)
 app.include_router(books.router)
+app.include_router(catalog.router)
 app.include_router(review.router)
 app.include_router(stats.router)
 app.include_router(achievements.router)
