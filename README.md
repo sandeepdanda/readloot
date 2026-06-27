@@ -19,7 +19,8 @@ Collect words from books. Review with spaced repetition. Earn XP. Level up. Unlo
 
 ```mermaid
 graph LR
-    A["📖 Read a book"] --> B["✍️ Collect words"]
+    A["📖 Import a book"] --> G["✨ Auto-extract vocab"]
+    G --> B["🔓 Unlock by chapter"]
     B --> C["🧠 Review"]
     C --> D["⚔️ Earn XP"]
     D --> E["📈 Level up"]
@@ -30,6 +31,7 @@ graph LR
     style B fill:#7c3aed,color:#fff,stroke:none
     style C fill:#7c3aed,color:#fff,stroke:none
     style D fill:#7c3aed,color:#fff,stroke:none
+    style G fill:#7c3aed,color:#fff,stroke:none
     style E fill:#7c3aed,color:#fff,stroke:none
     style F fill:#7c3aed,color:#fff,stroke:none
 ```
@@ -40,12 +42,14 @@ Words come back at increasing intervals (1, 1, 3, 7, 14, 30 days) as you master 
 
 | | | |
 |---|---|---|
+| ✨ **Auto-Vocab from Books** | Import a public-domain book → spaCy + CEFR-J/Octanove + WordNet pick the words worth learning, per chapter | No manual typing — the book fills your collection |
+| 🔓 **Chapter Unlocking** | Auto-picked words stay locked until you mark a chapter read | No spoilers; reading drives the review queue |
+| 💎 **Rarity & Evolution** | Words get a rarity tier (common→legendary, from word frequency) and a growth stage (seed→crystal tree, from mastery) | The collection feels alive |
 | 🧠 **Spaced Repetition** | 6 mastery levels with SM-2 intervals | Words come back when you're about to forget |
 | ⚔️ **XP & Levels** | Novice → Page Turner → Bookworm → Word Smith → Lexicon Lord → Master | +10 XP per word, +5 XP per correct review |
 | 🔥 **Streaks** | Daily activity tracking | Consecutive days keep your streak alive |
 | 🏆 **10 Achievements** | Word milestones, streak goals, perfect reviews | Animated toasts when you unlock them |
 | ✨ **Word of the Day** | Date-seeded, mastery-weighted | Resurfaces words you haven't seen in a while |
-| 📚 **Book Organization** | Words grouped by book and chapter | Browse your vocabulary by source |
 | 🔍 **Full-text Search** | SQLite FTS5 | Search across words, meanings, synonyms, context |
 | 🌙 **Dark/Light/System** | Three theme modes | PWA installable on mobile |
 
@@ -53,7 +57,8 @@ Words come back at increasing intervals (1, 1, 3, 7, 14, 30 days) as you master 
 
 ```mermaid
 graph LR
-    A["🖥️ Next.js 14\nTypeScript · Tailwind"] -->|REST + JWT| B["⚙️ FastAPI\n16 endpoints"] --> C["📦 Python Service Layer\nReview · XP · Achievements"] --> D[("💾 SQLite\nper user")]
+    A["🖥️ Next.js 14\nTypeScript · Tailwind"] -->|REST + JWT| B["⚙️ FastAPI\n18 endpoints"] --> C["📦 Python Service Layer\nExtract · Review · XP · Achievements"] --> D[("💾 SQLite\nper user")]
+    B -.->|book text| G["📖 Project Gutenberg"]
 
     style A fill:#1e1b4b,color:#c4b5fd,stroke:#7c3aed
     style B fill:#1e1b4b,color:#c4b5fd,stroke:#7c3aed
@@ -102,7 +107,9 @@ vault stats           # XP, level, streak
 
 ## What's Next
 
-Auto-vocabulary extraction from books, word rarity tiers, FSRS algorithm, boss battles, and more. See [ROADMAP.md](ROADMAP.md).
+Auto-vocabulary from books and word rarity/evolution are **shipped**. Next:
+live Gutendex catalog search, the FSRS review algorithm, and boss battles.
+See [ROADMAP.md](ROADMAP.md) and [NORTH_STAR.md](NORTH_STAR.md).
 
 For full architecture, API docs, schema, and security details: [PROJECT.md](PROJECT.md)
 
